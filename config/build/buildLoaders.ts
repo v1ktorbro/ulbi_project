@@ -1,17 +1,25 @@
-import type { RuleSetRule } from "webpack";
+import MiniCssExtractPlugin from "mini-css-extract-plugin";
 
-const buildLoaders = (): RuleSetRule[] => {
+import type { RuleSetRule } from "webpack";
+import type { BuildOptions } from "./types/config";
+
+const buildLoaders = ({ isDev }: BuildOptions): RuleSetRule[] => {
   const cssLoader = {
     test: /\.s[ac]ss$/i,
     use: [
-      // Creates `style` nodes from JS strings
-      "style-loader",
+      isDev ? "style-loader" : MiniCssExtractPlugin.loader,
       // create .module.sass to .d.ts
       "@teamsupercell/typings-for-css-modules-loader",
       {
-        // Translates CSS into CommonJS
         loader: "css-loader",
-        options: { modules: true },
+        options: {
+          modules: {
+            auto: (resPath: string) => Boolean(resPath.includes(".module.")),
+            localIdentName: isDev
+              ? "[path][name]__[local]--[hash:base64:4]"
+              : "[hash:base64:8]",
+          },
+        },
       },
       {
         loader: "resolve-url-loader",
@@ -21,7 +29,6 @@ const buildLoaders = (): RuleSetRule[] => {
           silent: true,
         },
       },
-      // Compiles Sass to CSS
       {
         loader: "sass-loader",
         options: {
@@ -33,10 +40,8 @@ const buildLoaders = (): RuleSetRule[] => {
 
   const typescriptLoader = {
     test: /\.(ts|js)x?$/,
-    // use: "ts-loader",
-    exclude: /node_modules/,
-
     use: [{ loader: "babel-loader" }],
+    exclude: /node_modules/,
   };
 
   return [typescriptLoader, cssLoader];

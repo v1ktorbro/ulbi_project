@@ -1,11 +1,10 @@
 import SomeCom from "../components/SomeCom";
 
-import scss from "./app.module.scss";
+import "./styles/index.scss";
 
 const App = () => {
   return (
-    <div className={scss.root}>
-      im App2111
+    <div className={"app"}>
       <SomeCom />
     </div>
   );
